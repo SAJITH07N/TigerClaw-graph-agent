@@ -1,0 +1,35 @@
+CREATE QUERY shared_card_fanout(STRING card_id, INT time_window_seconds) FOR GRAPH FraudInvestigationGraph {
+    /*
+      Card Fan-Out & Multi-Account Card Abuse Detection.
+      Examines multi-account, multi-device, and multi-address usage for a single card.
+    */
+    SetAccum<STRING> @@accounts;
+    SetAccum<STRING> @@devices;
+    SetAccum<STRING> @@addresses;
+    SumAccum<INT> @@txn_count = 0;
+
+    Cards = { Card.* };
+    Seed = SELECT c FROM Cards:c WHERE c.id == card_id;
+
+    // Accounts holding this card
+    Accs = SELECT a FROM Seed:c -(HELD_BY:e)- Account:a
+           ACCUM @@accounts += a.id;
+
+    // Transactions made with this card
+    Txns = SELECT t FROM Seed:c -(PAID_WITH:e)- Transaction:t
+           ACCUM @@txn_count += 1;
+
+    // Devices & Addresses from transactions
+    Devs = SELECT d FROM Txns:t -(FROM_DEVICE:e)- Device:d
+           ACCUM @@devices += d.id;
+
+    Addrs = SELECT ad FROM Txns:t -(TO_ADDRESS:e)- Address:ad
+            ACCUM @@addresses += ad.id;
+
+    BOOL is_anomalous = (@@accounts.size() >= 2 OR @@devices.size() >= 3 OR @@addresses.size() >= 3);
+    DOUBLE fanout_score = @@accounts.size() * 0.4 + @@devices.size() * 0.3 + @@addresses.size() * 0.3;
+
+    PRINT card_id, is_anomalous AS is_anomalous_fanout, @@accounts AS associated_accounts,
+          @@devices AS associated_devices, @@addresses AS associated_addresses,
+          @@txn_count AS transaction_count, fanout_score;
+}

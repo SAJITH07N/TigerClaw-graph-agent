@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  tigergraph-fraud-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tigergraph-fraud-agent
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - TIGERGRAPH_MODE=${TIGERGRAPH_MODE:-auto}
+      - TIGERGRAPH_HOST=${TIGERGRAPH_HOST:-http://127.0.0.1}
+      - TIGERGRAPH_PORT=${TIGERGRAPH_PORT:-14240}
+      - TIGERGRAPH_RESTPP_PORT=${TIGERGRAPH_RESTPP_PORT:-9000}
+      - TIGERGRAPH_GRAPHNAME=${TIGERGRAPH_GRAPHNAME:-FraudGraph}
+      - TIGERGRAPH_USERNAME=${TIGERGRAPH_USERNAME:-tigergraph}
+      - TIGERGRAPH_PASSWORD=${TIGERGRAPH_PASSWORD:-tigergraph}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8000
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./answers:/app/answers
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

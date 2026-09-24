@@ -1,0 +1,219 @@
+{
+  "case_id": "CASE-BM-13",
+  "benchmark_index": 13,
+  "case_title": "Card Testing Probing on Digital Merchant",
+  "trigger": {
+    "type": "risk_score_alert",
+    "data": {
+      "txn_id": "TXN-13001",
+      "account_id": "ACC-CARDTEST-1301",
+      "card_id": "CARD-4012-13",
+      "amount": 1.99,
+      "risk_score": 0.77,
+      "device_id": "DEV-SCRIPT-1301",
+      "is_burst": true,
+      "burst_count": 5,
+      "p_emaildomain": "trashmail.com"
+    }
+  },
+  "investigation_results": {
+    "top_typology_match": {
+      "typology_id": "TYP-TEST-003",
+      "name": "Card Testing Burst / Micro-Charge",
+      "confidence": 0.6921,
+      "matched_indicators": [
+        "high_frequency_merchant_retries",
+        "card_fanout_across_devices",
+        "micro_charges_under_15",
+        "burst_velocity_under_120s"
+      ],
+      "description": "Rapid automated micro-transactions (< $15.00) used by card-testing scripts to probe validity."
+    },
+    "risk_level": "high",
+    "composite_confidence": 0.8659,
+    "data_completeness": 0.948,
+    "signal_conflict": 0.1925,
+    "evidence_pillars": {
+      "p_txn": 1.0,
+      "p_dev": 0.6,
+      "p_behav": 0.7,
+      "p_prior": 0.64
+    }
+  },
+  "evidence_trajectory": {
+    "before_additional_evidence": {
+      "data_completeness": 0.648,
+      "signal_conflict": 0.77,
+      "composite_confidence": 0.4235,
+      "risk_level": "high",
+      "pillar_scores": {
+        "p_txn": 1.0,
+        "p_dev": 0.4,
+        "p_behav": 0.5,
+        "p_prior": 0.64
+      }
+    },
+    "additional_evidence_gathered": [
+      {
+        "inquiry_type": "device_carrier_reputation_lookup",
+        "entity": "DEV-SCRIPT-1301",
+        "result": "BENIGN_TELECOM_IP",
+        "timestamp": 1790271210
+      }
+    ],
+    "after_additional_evidence": {
+      "data_completeness": 0.948,
+      "signal_conflict": 0.1925,
+      "composite_confidence": 0.8659,
+      "risk_level": "high",
+      "pillar_scores": {
+        "p_txn": 1.0,
+        "p_dev": 0.6,
+        "p_behav": 0.7,
+        "p_prior": 0.64
+      }
+    },
+    "what_changed": "Additional evidence gathering via [device_carrier_reputation_lookup] yielded [BENIGN_TELECOM_IP]. Data Completeness increased from 0.65 to 0.95. Signal Conflict reduced from 0.77 to 0.19. Composite Confidence improved from 0.42 to 0.87."
+  },
+  "next_best_actions_before_evidence": [
+    {
+      "action_id": "ACT-SMS-1301",
+      "action_type": "out_of_band_sms_verification",
+      "target_entity": "ACC-CARDTEST-1301",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "High risk pattern detected. Dispatched out-of-band verification challenge.",
+      "policy_citation": "POL-FRM-2026 Clause 2.3",
+      "status": "executed"
+    },
+    {
+      "action_id": "ACT-LOCK-2-13",
+      "action_type": "temporary_card_lock",
+      "target_entity": "CARD-4012-13",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "Temporary lock pending customer verification of anomalous transaction.",
+      "policy_citation": "POL-FRM-2026 Clause 1.1",
+      "status": "executed"
+    }
+  ],
+  "next_best_actions_after_evidence": [
+    {
+      "action_id": "ACT-SMS-1301",
+      "action_type": "out_of_band_sms_verification",
+      "target_entity": "ACC-CARDTEST-1301",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "High risk pattern detected. Dispatched out-of-band verification challenge.",
+      "policy_citation": "POL-FRM-2026 Clause 2.3",
+      "status": "executed"
+    },
+    {
+      "action_id": "ACT-LOCK-2-13",
+      "action_type": "temporary_card_lock",
+      "target_entity": "CARD-4012-13",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "Temporary lock pending customer verification of anomalous transaction.",
+      "policy_citation": "POL-FRM-2026 Clause 1.1",
+      "status": "executed"
+    }
+  ],
+  "next_best_actions": [
+    {
+      "action_id": "ACT-SMS-1301",
+      "action_type": "out_of_band_sms_verification",
+      "target_entity": "ACC-CARDTEST-1301",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "High risk pattern detected. Dispatched out-of-band verification challenge.",
+      "policy_citation": "POL-FRM-2026 Clause 2.3",
+      "status": "executed"
+    },
+    {
+      "action_id": "ACT-LOCK-2-13",
+      "action_type": "temporary_card_lock",
+      "target_entity": "CARD-4012-13",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "Temporary lock pending customer verification of anomalous transaction.",
+      "policy_citation": "POL-FRM-2026 Clause 1.1",
+      "status": "executed"
+    }
+  ],
+  "sar_filing": null,
+  "grounded_explanation": "# FRAUD INVESTIGATION AUDIT REPORT - CASE-BM-13\n**Primary Finding**: Classified as **Card Testing Burst / Micro-Charge** (Typology ID: `TYP-TEST-003`).\n**Risk Level**: `HIGH` | **Composite Confidence**: `86.59%` | **Data Completeness**: `94.80%`.\n\n## 1. Graph Evidence & Entity Topology\n- **Target Accounts**: ACC-CARDTEST-1301\n- **Associated Cards**: CARD-4012-13\n- **Hardware Devices**: DEV-SCRIPT-1301\n- **Graph Indicators**: high_frequency_merchant_retries, card_fanout_across_devices, micro_charges_under_15, burst_velocity_under_120s\n\n## 2. Uncertainty & Evidence Trajectory\n- **Pillar Completeness**: Txn: 1.00, Dev: 0.60, Behav: 0.70, Prior Cases: 0.64\n- **Evidence Trajectory Delta**: Additional evidence gathering via [device_carrier_reputation_lookup] yielded [BENIGN_TELECOM_IP]. Data Completeness increased from 0.65 to 0.95. Signal Conflict reduced from 0.77 to 0.19. Composite Confidence improved from 0.42 to 0.87.\n\n## 3. Adversarial Counterfactual Analysis\n- **Strongest Benign Counterfactual**: Shared Household Device or Authorized Family Delegate (Plausibility: 55.00%)\n- **Fraud vs. Benign Confidence**: 77.00% | **False-Positive Risk**: 23.00%\n- **Adversarial Recommendation**: `CONFIRM_CONTAINMENT`\n\n## 4. Policy-Grounded Next-Best Actions\n- **[Tier-0 Automated] out_of_band_sms_verification** (executed): High risk pattern detected. Dispatched out-of-band verification challenge. *(Ref: POL-FRM-2026 Clause 2.3)*\n- **[Tier-0 Automated] temporary_card_lock** (executed): Temporary lock pending customer verification of anomalous transaction. *(Ref: POL-FRM-2026 Clause 1.1)*\n\n## 5. Regulatory FinCEN SAR Filing\n- **Status**: Below regulatory thresholds or cleared benign activity. No SAR required.",
+  "case_memory_id": "CASE-BM-13",
+  "audit_steps": [
+    {
+      "step": 1,
+      "name": "Trigger Ingestion & Normalization",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Ingested risk_score_alert for txn TXN-13001"
+    },
+    {
+      "step": 2,
+      "name": "Entity Resolution & Neighborhood BFS",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Extracted 20 nodes and 25 edges."
+    },
+    {
+      "step": 3,
+      "name": "Multi-Query GSQL & GraphRAG Evidence Gathering",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Ran 9 GSQL queries (including Circular Routing & Merchant Collusion). Matched top typology: Card Testing Burst / Micro-Charge."
+    },
+    {
+      "step": 4,
+      "name": "Specialized Typology Deep-Dive Analysis",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Specialized typology analysis identified [Automated Micro-Charge Card Testing Script] as the primary pattern (score: 0.90). FinCEN classification: Automated Script / Card Testing Attack."
+    },
+    {
+      "step": 5,
+      "name": "Multi-Pillar Uncertainty Assessment",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Completeness: 0.65, Conflict: 0.77, Conf: 0.42, Loop Required: True"
+    },
+    {
+      "step": 6,
+      "name": "Controlled Evidence Gathering Loop & Trajectory Diff",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Additional evidence gathering via [device_carrier_reputation_lookup] yielded [BENIGN_TELECOM_IP]. Data Completeness increased from 0.65 to 0.95. Signal Conflict reduced from 0.77 to 0.19. Composite Confidence improved from 0.42 to 0.87."
+    },
+    {
+      "step": 7,
+      "name": "Adversarial Counterfactual Check",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Top counterfactual: Shared Household Device or Authorized Family Delegate (0.55). Fraud Conf: 0.77. Rec: CONFIRM_CONTAINMENT."
+    },
+    {
+      "step": 8,
+      "name": "Next-Best Action Determination & Permissions Gating",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Generated 2 actions. SAR Required: False."
+    },
+    {
+      "step": 9,
+      "name": "Grounded Explanation Synthesis",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Synthesized audit report (Deterministic GraphRAG Grounded) with 2 actions and policy grounding."
+    },
+    {
+      "step": 10,
+      "name": "Graph Case Memory Persistence",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Persisted case CASE-BM-13 (9 evidence, 2 actions) to TigerGraph Case Memory."
+    }
+  ]
+}

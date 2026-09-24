@@ -1,0 +1,41 @@
+CREATE QUERY velocity_check(STRING account_id, INT current_ts) FOR GRAPH FraudInvestigationGraph {
+    /*
+      Sliding Window Velocity vs Account Historical Baseline.
+      Computes 1-hour and 24-hour transaction frequency and volume spikes.
+    */
+    SumAccum<INT> @@count_1h = 0;
+    SumAccum<DOUBLE> @@vol_1h = 0.0;
+    SumAccum<INT> @@count_24h = 0;
+    SumAccum<DOUBLE> @@vol_24h = 0.0;
+    DOUBLE hist_avg = 120.0;
+    DOUBLE hist_vel = 1.5;
+
+    Accs = { Account.* };
+    Target = SELECT a FROM Accs:a WHERE a.id == account_id
+             ACCUM
+                 hist_avg = a.historical_avg_amount,
+                 hist_vel = a.historical_velocity;
+
+    // Get directly connected transactions or transactions via cards
+    Cards = SELECT c FROM Target:a -(HELD_BY:e)- Card:c;
+    Txns = SELECT t FROM Cards:c -(PAID_WITH:e)- Transaction:t
+           ACCUM
+               INT diff = current_ts - t.ts,
+               IF diff <= 3600 AND diff >= 0 THEN
+                   @@count_1h += 1,
+                   @@vol_1h += t.amount
+               END,
+               IF diff <= 86400 AND diff >= 0 THEN
+                   @@count_24h += 1,
+                   @@vol_24h += t.amount
+               END;
+
+    DOUBLE expected_1h = hist_vel / 24.0;
+    DOUBLE z_score = (@@count_1h - expected_1h) / sqrt(expected_1h + 0.5);
+    DOUBLE spike_ratio = (@@vol_1h / (@@count_1h + 0.001)) / hist_avg;
+    BOOL is_spike = (z_score > 2.5 OR @@count_1h >= 4 OR spike_ratio > 3.5);
+
+    PRINT account_id, @@count_1h AS velocity_1h_count, @@vol_1h AS velocity_1h_volume,
+          @@count_24h AS velocity_24h_count, @@vol_24h AS velocity_24h_volume,
+          z_score AS velocity_zscore, spike_ratio AS amount_spike_ratio, is_spike AS is_velocity_spike;
+}

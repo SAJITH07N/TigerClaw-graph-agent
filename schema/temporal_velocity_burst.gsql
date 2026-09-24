@@ -1,0 +1,24 @@
+CREATE QUERY temporal_velocity_burst(STRING card_id, INT burst_window_seconds, INT count_threshold) FOR GRAPH FraudInvestigationGraph {
+    /*
+      Temporal Micro-Transaction Velocity Burst Detection.
+      Detects high-frequency sub-minute automated card testing patterns.
+    */
+    SumAccum<INT> @@txn_count = 0;
+    SumAccum<INT> @@micro_charges = 0;
+
+    Cards = { Card.* };
+    Seed = SELECT c FROM Cards:c WHERE c.id == card_id;
+
+    Txns = SELECT t FROM Seed:c -(PAID_WITH:e)- Transaction:t
+           ACCUM
+               @@txn_count += 1,
+               IF t.amount < 15.0 THEN
+                   @@micro_charges += 1
+               END;
+
+    BOOL is_burst = (@@txn_count >= count_threshold);
+    BOOL is_card_testing = is_burst AND (@@micro_charges >= 2 OR @@txn_count >= 4);
+
+    PRINT card_id, is_burst AS burst_detected, @@txn_count AS max_burst_count,
+          @@micro_charges AS micro_charges_count, is_card_testing;
+}

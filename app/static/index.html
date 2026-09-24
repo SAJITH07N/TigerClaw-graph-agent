@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Tiger | Autonomous Graph Fraud Intelligence &amp; Next-Best Action</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#0A0A0B', panel: '#151517', 'panel-2': '#1D1D20',
+            line: '#2A2A30', 'line-strong': '#3A3A42', chalk: '#F5F5F2', mute: '#8A8A93',
+            'bau-red': '#E63A27', 'bau-blue': '#2358E6', 'bau-yellow': '#F5C518', 'bau-green': '#18B26A',
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ============================ TOP HEADER ============================ -->
+  <header class="border-b border-line px-6 py-3 flex items-center justify-between sticky top-0 z-40" style="background: rgba(10,10,11,0.9); backdrop-filter: blur(8px);">
+    <div class="flex items-center gap-4">
+      <div class="bau-mark" aria-hidden="true">
+        <span class="m-square"></span>
+        <span class="m-circle"></span>
+        <span class="m-tri"></span>
+      </div>
+      <div class="border-l border-line pl-4">
+        <h1 class="font-bold text-base tracking-tight leading-none text-chalk">Agent Tiger</h1>
+        <p class="bau-eyebrow mt-1 text-mute">Autonomous Graph Intelligence · GraphRAG · FinCEN SAR</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5">
+      <div id="llm-status-badge" class="hidden xl:flex kpi-chip">
+        <i class="fa-solid fa-robot text-bau-blue"></i>
+        <span id="llm-mode-text" class="text-mute">Groq LLM</span>
+      </div>
+      <div id="engine-status-badge" class="kpi-chip">
+        <span class="status-dot"></span>
+        <span id="engine-mode-text" class="text-mute">In-Memory GSQL Engine</span>
+      </div>
+      <button onclick="toggleBenchmarkMatrixModal()" class="bau-btn">
+        <i class="fa-solid fa-table-cells text-bau-yellow"></i>
+        <span>Benchmark Matrix</span>
+      </button>
+      <button onclick="runBatchBenchmarks()" id="batch-run-btn" class="bau-btn">
+        <i class="fa-solid fa-list-check text-bau-green"></i>
+        <span>Run All 20</span>
+      </button>
+      <button onclick="reinvestigateCurrentCase()" class="bau-btn bau-btn-primary">
+        <i class="fa-solid fa-bolt"></i>
+        <span>Re-Run Investigation</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================ MAIN CONTAINER ============================ -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- ---------------------- LEFT: CASE QUEUE ---------------------- -->
+    <aside class="w-80 border-r border-line flex flex-col h-[calc(100vh-61px)]" style="background: var(--panel);">
+      <div class="p-3.5 border-b border-line space-y-3">
+        <div class="relative">
+          <i class="fa-solid fa-search absolute left-3 top-2.5 text-xs text-mute"></i>
+          <input type="text" id="case-search-input" oninput="filterCases()" placeholder="Search cases, accounts, cards"
+                 class="w-full bau-inset pl-8 pr-3 py-2 text-xs text-chalk placeholder-mute focus:outline-none focus:border-bau-blue">
+        </div>
+
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+          <button onclick="setTypologyFilter('all')" class="typology-filter-btn pill pill-active" data-filter="all">All</button>
+          <button onclick="setTypologyFilter('ATO')" class="typology-filter-btn pill" data-filter="ATO">ATO</button>
+          <button onclick="setTypologyFilter('Mule')" class="typology-filter-btn pill" data-filter="Mule">Mule</button>
+          <button onclick="setTypologyFilter('Card')" class="typology-filter-btn pill" data-filter="Card">Testing</button>
+          <button onclick="setTypologyFilter('Synthetic')" class="typology-filter-btn pill" data-filter="Synthetic">Synthetic</button>
+          <button onclick="setTypologyFilter('Vacation')" class="typology-filter-btn pill" data-filter="Vacation">Travel</button>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="bau-eyebrow">Benchmark Scenarios</span>
+          <span id="case-count-badge" class="text-[10px] font-mono text-mute border border-line px-1.5 py-0.5 rounded-sm">20 Total</span>
+        </div>
+      </div>
+
+      <div id="case-list" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+        <!-- injected -->
+      </div>
+    </aside>
+
+    <!-- ---------------------- RIGHT: WORKSPACE ---------------------- -->
+    <main class="flex-1 overflow-y-auto p-6 space-y-5 h-[calc(100vh-61px)] custom-scrollbar">
+
+      <!-- CASE HEADER -->
+      <section id="case-header-card" class="bau-panel edge-blue p-5">
+        <div class="flex items-start justify-between gap-6">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <span id="case-id-badge" class="font-mono text-xs px-2 py-0.5 bau-inset text-mute font-bold">CASE-BM-01</span>
+              <h2 id="case-title-text" class="text-xl font-bold tracking-tight">Account Takeover via Android Emulator</h2>
+              <span id="case-risk-badge" class="risk-chip risk-critical">Critical</span>
+              <span id="case-sar-badge" class="risk-chip hidden" style="background: var(--bau-yellow);">
+                <i class="fa-solid fa-file-shield mr-1"></i>FinCEN SAR
+              </span>
+            </div>
+            <p id="case-typology-text" class="text-sm text-mute">Classified typology: <strong class="text-chalk font-semibold">Account Takeover (ATO)</strong> · TYP-ATO-001</p>
+          </div>
+
+          <div class="flex items-stretch gap-0 border border-line rounded-sm overflow-hidden flex-shrink-0">
+            <div class="px-5 py-2.5 border-r border-line" style="background: var(--panel-2);">
+              <div class="bau-eyebrow">Total Volume</div>
+              <div id="case-amount-text" class="text-xl font-bold font-mono mt-1">$3,450.00</div>
+            </div>
+            <div class="px-5 py-2.5" style="background: var(--panel-2);">
+              <div class="bau-eyebrow">Confidence</div>
+              <div id="case-confidence-text" class="text-xl font-bold font-mono mt-1 text-bau-blue">88.5%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8-STEP SEQUENCE -->
+        <div class="mt-5 pt-4 border-t border-line">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <span class="bau-eyebrow">LangGraph 8-Step Investigation</span>
+              <span id="active-step-indicator" class="text-[10px] font-mono font-bold text-bau-green px-2 py-0.5 border border-line rounded-sm">All 8 Steps Completed</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="stepBackward()" class="bau-btn px-2.5 py-1.5" title="Previous step" aria-label="Previous step">
+                <i class="fa-solid fa-chevron-left text-[11px]"></i>
+              </button>
+              <button onclick="playStepperAnimation()" class="bau-btn bau-btn-primary px-3 py-1.5" title="Animate sequence">
+                <i class="fa-solid fa-play text-[10px]"></i>
+                <span>Animate</span>
+              </button>
+              <button onclick="stepForward()" class="bau-btn px-2.5 py-1.5" title="Next step" aria-label="Next step">
+                <i class="fa-solid fa-chevron-right text-[11px]"></i>
+              </button>
+            </div>
+          </div>
+          <div id="stepper-container" class="grid grid-cols-8 gap-2">
+            <!-- injected -->
+          </div>
+        </div>
+      </section>
+
+      <!-- GRAPH + UNCERTAINTY -->
+      <div class="grid grid-cols-12 gap-5">
+
+        <!-- GRAPH CANVAS -->
+        <section class="col-span-12 lg:col-span-7 bau-panel p-4 flex flex-col h-[520px]">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <span class="bau-eyebrow">Graph Evidence</span>
+              <h3 class="font-bold text-sm mt-0.5">2-Hop Entity Neighborhood</h3>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-3 text-[10px] font-mono text-mute">
+                <span class="flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5" style="background:var(--bau-red);transform:rotate(45deg)"></span>Txn</span>
+                <span class="flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5" style="background:var(--bau-blue)"></span>Account</span>
+                <span class="flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5 rounded-full" style="background:#8B5CF6"></span>Card</span>
+                <span class="flex items-center gap-1.5"><span class="inline-block w-2.5 h-2.5" style="background:var(--bau-yellow);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)"></span>Device</span>
+              </div>
+              <button onclick="fitGraphView()" class="bau-btn px-2.5 py-1">
+                <i class="fa-solid fa-expand text-[11px]"></i> Fit
+              </button>
+            </div>
+          </div>
+          <div id="cy" class="flex-1 w-full border border-line rounded-sm relative overflow-hidden"></div>
+        </section>
+
+        <!-- UNCERTAINTY -->
+        <div class="col-span-12 lg:col-span-5 space-y-5">
+
+          <section class="bau-panel edge-yellow p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <span class="bau-eyebrow">Uncertainty Model</span>
+                <h3 class="font-bold text-sm mt-0.5">4-Pillar Evidence Completeness</h3>
+              </div>
+              <span id="completeness-score-text" class="font-mono text-lg font-bold text-bau-green">92%</span>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-mute">P<sub>txn</sub> · Transaction velocity</span>
+                  <span id="pillar-txn-val" class="font-mono font-semibold">0.90</span>
+                </div>
+                <div class="pillar-track"><div id="pillar-txn-bar" class="pillar-fill" style="width:90%;background:var(--bau-blue)"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-mute">P<sub>dev</sub> · Device &amp; biometrics</span>
+                  <span id="pillar-dev-val" class="font-mono font-semibold">0.85</span>
+                </div>
+                <div class="pillar-track"><div id="pillar-dev-bar" class="pillar-fill" style="width:85%;background:var(--bau-yellow)"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-mute">P<sub>behav</sub> · Account baseline</span>
+                  <span id="pillar-behav-val" class="font-mono font-semibold">0.70</span>
+                </div>
+                <div class="pillar-track"><div id="pillar-behav-bar" class="pillar-fill" style="width:70%;background:#8B5CF6"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="text-mute">P<sub>prior</sub> · Case memory similarity</span>
+                  <span id="pillar-prior-val" class="font-mono font-semibold">0.88</span>
+                </div>
+                <div class="pillar-track"><div id="pillar-prior-bar" class="pillar-fill" style="width:88%;background:var(--bau-green)"></div></div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-line grid grid-cols-2 gap-3">
+              <div class="bau-inset p-2.5">
+                <div class="bau-eyebrow">Signal Conflict · S<sub>conflict</sub></div>
+                <div id="conflict-score-text" class="text-base font-bold font-mono text-bau-yellow mt-1">0.12</div>
+              </div>
+              <div class="bau-inset p-2.5">
+                <div class="bau-eyebrow">Composite Confidence</div>
+                <div id="composite-confidence-metric" class="text-base font-bold font-mono text-bau-green mt-1">89.4%</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="bau-panel p-4">
+            <span class="bau-eyebrow">Before / After</span>
+            <h3 class="font-bold text-sm mt-0.5 mb-2">Evidence Trajectory Delta</h3>
+            <p id="trajectory-delta-text" class="text-xs text-chalk bau-inset p-3 leading-relaxed">
+              Baseline evidence assessed. No additional step-up needed.
+            </p>
+          </section>
+        </div>
+      </div>
+
+      <!-- ACTIONS + REPORT -->
+      <div class="grid grid-cols-12 gap-5">
+
+        <section class="col-span-12 lg:col-span-7 bau-panel p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="bau-eyebrow">Governance &amp; Containment</span>
+              <h3 class="font-bold text-sm mt-0.5">Next-Best Actions &amp; Permissions</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center border border-line rounded-sm overflow-hidden text-[10px] font-mono">
+                <button id="nba-tab-after" onclick="switchActionTab('after')" class="px-2.5 py-1 bg-line-strong text-chalk font-semibold transition-colors">Post-Evidence (Final)</button>
+                <button id="nba-tab-before" onclick="switchActionTab('before')" class="px-2.5 py-1 text-mute hover:text-chalk transition-colors">Pre-Evidence (Initial)</button>
+              </div>
+              <span class="text-[10px] font-mono text-mute border border-line px-2 py-0.5 rounded-sm">POL-FRM-2026</span>
+            </div>
+          </div>
+          <div id="action-queue" class="space-y-2.5">
+            <!-- injected -->
+          </div>
+        </section>
+
+        <section class="col-span-12 lg:col-span-5 bau-panel edge-green p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="bau-eyebrow">Audit Trail</span>
+              <h3 class="font-bold text-sm mt-0.5">Grounded Investigation Report</h3>
+            </div>
+            <button onclick="toggleSarModal()" id="view-sar-btn" class="bau-btn hidden" style="border-color:var(--bau-yellow);color:var(--bau-yellow)">
+              <i class="fa-solid fa-file-shield"></i>
+              <span>View SAR</span>
+            </button>
+          </div>
+          <div class="bau-inset p-3.5 max-h-[320px] overflow-y-auto custom-scrollbar">
+            <pre id="grounded-explanation-text" class="text-xs text-chalk whitespace-pre-wrap leading-relaxed" style="font-family:'Space Grotesk',sans-serif"></pre>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ============================ SAR MODAL ============================ -->
+  <div id="sar-modal" class="fixed inset-0 bau-modal-backdrop z-50 flex items-center justify-center p-4 hidden">
+    <div class="bau-modal edge-yellow w-full max-w-3xl max-h-[85vh] flex flex-col animate-in">
+      <div class="p-5 border-b border-line flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-file-shield text-bau-yellow text-lg"></i>
+          <div>
+            <h3 class="font-bold text-base">FinCEN Suspicious Activity Report</h3>
+            <p class="bau-eyebrow mt-0.5">Mandatory filing · 31 CFR § 1020.320</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="copySarNarrative()" class="bau-btn">
+            <i class="fa-regular fa-copy"></i><span>Copy</span>
+          </button>
+          <button onclick="downloadSarDocument()" class="bau-btn" style="border-color:var(--bau-yellow);color:var(--bau-yellow)">
+            <i class="fa-solid fa-download"></i><span>Download</span>
+          </button>
+          <button onclick="toggleSarModal()" class="text-mute hover:text-chalk p-1.5 ml-1" aria-label="Close">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6 overflow-y-auto text-xs text-chalk leading-relaxed font-mono custom-scrollbar" id="sar-modal-body" style="background:var(--ink)">
+        <!-- injected -->
+      </div>
+      <div class="p-4 border-t border-line flex items-center justify-between">
+        <span class="text-xs text-mute font-mono">Status: <strong class="text-bau-yellow">QUEUED_FOR_BSA_REVIEW</strong> · 31 U.S.C. 5318(g) Safe Harbor</span>
+        <button onclick="toggleSarModal()" class="bau-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ BENCHMARK MATRIX MODAL ============================ -->
+  <div id="benchmark-matrix-modal" class="fixed inset-0 bau-modal-backdrop z-50 flex items-center justify-center p-3 sm:p-6 hidden">
+    <div class="bau-modal edge-blue w-full max-w-7xl max-h-[94vh] flex flex-col overflow-hidden animate-in">
+
+      <div class="p-5 border-b border-line flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="bau-mark" aria-hidden="true">
+            <span class="m-square"></span><span class="m-circle"></span><span class="m-tri"></span>
+          </div>
+          <div class="border-l border-line pl-3">
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-base">Benchmark Evaluation Matrix</h3>
+              <span class="text-[10px] font-mono text-bau-blue border border-line px-2 py-0.5 rounded-sm font-semibold">20 Cases</span>
+            </div>
+            <p class="bau-eyebrow mt-0.5">Uncertainty · NBA permissions · FinCEN SAR compliance</p>
+          </div>
+        </div>
+
+        <div id="matrix-kpi-summary" class="flex flex-wrap items-center gap-2"></div>
+
+        <div class="flex items-center gap-2 self-end lg:self-auto">
+          <button onclick="exportBenchmarkMatrixCSV()" class="bau-btn">
+            <i class="fa-solid fa-file-csv text-bau-green"></i><span>Export CSV</span>
+          </button>
+          <button onclick="toggleBenchmarkMatrixModal()" class="text-mute hover:text-chalk p-1.5" aria-label="Close">
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-5 py-3 border-b border-line flex flex-wrap items-center justify-between gap-3" style="background:var(--panel-2)">
+        <div class="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+          <div class="relative w-64">
+            <i class="fa-solid fa-search absolute left-3 top-2.5 text-xs text-mute"></i>
+            <input type="text" id="matrix-search-input" oninput="filterMatrixCases()" placeholder="Filter case, typology, account"
+                   class="w-full bau-inset pl-8 pr-3 py-2 text-xs text-chalk placeholder-mute focus:outline-none focus:border-bau-blue">
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="bau-eyebrow mr-1">Risk</span>
+            <button onclick="setMatrixRiskFilter('all')" class="matrix-risk-btn pill pill-active" data-risk="all">All</button>
+            <button onclick="setMatrixRiskFilter('critical')" class="matrix-risk-btn pill" data-risk="critical">Critical</button>
+            <button onclick="setMatrixRiskFilter('high')" class="matrix-risk-btn pill" data-risk="high">High</button>
+            <button onclick="setMatrixRiskFilter('medium')" class="matrix-risk-btn pill" data-risk="medium">Medium</button>
+            <button onclick="setMatrixRiskFilter('low')" class="matrix-risk-btn pill" data-risk="low">Low</button>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="bau-eyebrow mr-1">SAR</span>
+            <button onclick="setMatrixSarFilter('all')" class="matrix-sar-btn pill pill-active" data-sar="all">All</button>
+            <button onclick="setMatrixSarFilter('sar_only')" class="matrix-sar-btn pill" data-sar="sar_only">Mandatory</button>
+            <button onclick="setMatrixSarFilter('no_sar')" class="matrix-sar-btn pill" data-sar="no_sar">None</button>
+          </div>
+        </div>
+        <div id="matrix-filtered-count" class="text-xs font-mono text-mute">Showing 20 of 20 cases</div>
+      </div>
+
+      <div class="flex-1 overflow-auto custom-scrollbar">
+        <table class="w-full text-left text-xs border-collapse bau-table">
+          <thead class="sticky top-0 z-10">
+            <tr>
+              <th>Case ID</th>
+              <th>Scenario</th>
+              <th>Trigger</th>
+              <th class="text-right">Amount</th>
+              <th>Typology</th>
+              <th class="text-center">Risk</th>
+              <th class="text-center">C<sub>data</sub></th>
+              <th class="text-center">S<sub>conf</sub></th>
+              <th class="text-center">Confidence</th>
+              <th>Actions</th>
+              <th class="text-center">SAR</th>
+              <th class="text-center">Inspect</th>
+            </tr>
+          </thead>
+          <tbody id="benchmark-matrix-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="p-4 border-t border-line flex items-center justify-between text-xs">
+        <div class="text-mute flex items-center gap-3 font-mono">
+          <span><i class="fa-solid fa-layer-group text-bau-blue mr-1.5"></i>Dual-Mode: TigerGraph Cloud + In-Memory GSQL</span>
+          <span>·</span>
+          <span><i class="fa-solid fa-gavel text-bau-yellow mr-1.5"></i>31 CFR § 1020.320</span>
+        </div>
+        <button onclick="toggleBenchmarkMatrixModal()" class="bau-btn">Close</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <script src="/js/graph_visualizer.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

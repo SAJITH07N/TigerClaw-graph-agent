@@ -1,0 +1,26 @@
+CREATE QUERY get_entity_neighborhood(STRING start_id, STRING start_type, INT max_hops) FOR GRAPH FraudInvestigationGraph {
+    /*
+      2-hop BFS Subgraph Extraction around a seed entity (Transaction, Account, Card, or Device).
+    */
+    TYPEDEF TUPLE<STRING id, STRING v_type> NodeTuple;
+    SetAccum<NodeTuple> @@nodes;
+    SetAccum<EDGE> @@edges;
+    OrAccum @visited = false;
+
+    Start = { Transaction.*, Account.*, Card.*, Device.* };
+    Seeds = SELECT s FROM Start:s WHERE s.id == start_id;
+
+    Curr = Seeds;
+    WHILE Curr.size() > 0 AND max_hops > 0 DO
+        max_hops = max_hops - 1;
+        Curr = SELECT t FROM Curr:s -(ANY:e)- ANY:t
+               WHERE NOT t.@visited
+               ACCUM
+                   @@edges += e,
+                   @@nodes += NodeTuple(s.id, s.type),
+                   @@nodes += NodeTuple(t.id, t.type),
+                   t.@visited += true;
+    END;
+
+    PRINT @@nodes, @@edges;
+}

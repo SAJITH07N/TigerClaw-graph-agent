@@ -1,0 +1,41 @@
+CREATE QUERY shared_device_ring(STRING device_id) FOR GRAPH FraudInvestigationGraph {
+    /*
+      Mule Ring & Shared Device Detection.
+      Traverses from Device to connected Accounts, Cards, and Transactions.
+    */
+    SetAccum<STRING> @@accounts;
+    SetAccum<STRING> @@cards;
+    SumAccum<INT> @@txn_count = 0;
+    SumAccum<DOUBLE> @@total_volume = 0.0;
+    SumAccum<INT> @@flagged_fraud = 0;
+
+    Dev = { Device.* };
+    Seed = SELECT d FROM Dev:d WHERE d.id == device_id;
+
+    // 1-hop: Connected Accounts and Transactions
+    Accs = SELECT a FROM Seed:d -(USED_BY:e)- Account:a
+           ACCUM @@accounts += a.id;
+
+    Txns = SELECT t FROM Seed:d -(FROM_DEVICE:e)- Transaction:t
+           ACCUM
+               @@txn_count += 1,
+               @@total_volume += t.amount,
+               IF t.risk_score >= 0.70 OR t.is_fraud == 1 THEN
+                   @@flagged_fraud += 1
+               END;
+
+    // 2-hop: Cards associated with these accounts
+    Cards = SELECT c FROM Accs:a -(HELD_BY:e)- Card:c
+            ACCUM @@cards += c.id;
+
+    BOOL is_ring = (@@accounts.size() >= 2);
+    STRING severity = "NORMAL";
+    IF @@accounts.size() >= 4 THEN
+        severity = "CRITICAL";
+    ELSE IF is_ring THEN
+        severity = "HIGH";
+    END;
+
+    PRINT device_id, is_ring, @@accounts.size() AS shared_account_count,
+          @@accounts, @@cards, @@txn_count, @@total_volume, @@flagged_fraud, severity;
+}

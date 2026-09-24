@@ -1,0 +1,26 @@
+CREATE QUERY community_detection(INT min_size) FOR GRAPH FraudInvestigationGraph {
+    /*
+      Weakly Connected Components / Syndicate Community Clustering.
+      Finds clusters of Accounts sharing Cards and Devices.
+    */
+    MinAccum<INT> @community_id = 0;
+    MapAccum<INT, SetAccum<STRING>> @@communities;
+
+    AllNodes = { Account.*, Device.*, Card.* };
+
+    AllNodes = SELECT n FROM AllNodes:n
+               POST-ACCUM n.@community_id = getvid(n);
+
+    // Label propagation loop
+    INT iteration = 0;
+    WHILE iteration < 10 DO
+        iteration = iteration + 1;
+        AllNodes = SELECT s FROM AllNodes:s -(ANY:e)- ANY:t
+                   ACCUM t.@community_id += s.@community_id;
+    END;
+
+    Res = SELECT n FROM AllNodes:n
+          POST-ACCUM @@communities += (n.@community_id -> n.id);
+
+    PRINT @@communities;
+}

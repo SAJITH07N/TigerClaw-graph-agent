@@ -1,0 +1,34 @@
+CREATE QUERY circular_fund_routing(VERTEX<Account> start_account, INT max_depth = 4, INT time_window_seconds = 86400) FOR GRAPH FraudInvestigationGraph {
+  /*
+   * Circular Fund Routing & Money Laundering Layering Detection Query.
+   * Traverses directed fund routing paths through Accounts, Cards, and Transactions
+   * to detect circular flows (A -> B -> C -> ... -> A) within the specified time window.
+   */
+  TYPEDEF TUPLE<STRING cycle_path, INT hop_count, DOUBLE total_volume, BOOL is_circular> CycleResult;
+  ListAccum<CycleResult> @@cycle_results;
+  OrAccum<BOOL> @visited;
+  ListAccum<STRING> @path;
+  SumAccum<DOUBLE> @accum_amount;
+
+  Start = { start_account };
+
+  Start = SELECT s FROM Start:s
+          ACCUM s.@visited += TRUE,
+                s.@path += s.id,
+                s.@accum_amount += 0.0;
+
+  Current = Start;
+
+  FOREACH i IN RANGE[1, max_depth] DO
+    Current = SELECT tgt FROM Current:src -(PAID_WITH|ABOUT_ACCOUNT|HELD_BY:e)-> :tgt
+              ACCUM
+                IF tgt == start_account AND i >= 2 THEN
+                  @@cycle_results += CycleResult(src.@path + "->" + tgt.id, i, src.@accum_amount, TRUE)
+                ELSE IF NOT tgt.@visited THEN
+                  tgt.@visited += TRUE,
+                  tgt.@path += src.@path + "->" + tgt.id
+                END;
+  END;
+
+  PRINT @@cycle_results;
+}

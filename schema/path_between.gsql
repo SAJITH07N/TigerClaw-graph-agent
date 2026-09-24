@@ -1,0 +1,30 @@
+CREATE QUERY path_between(STRING source_id, STRING source_type, STRING target_id, STRING target_type, INT max_depth) FOR GRAPH FraudInvestigationGraph {
+    /*
+      Shortest Associative Path Search between suspect entities.
+    */
+    ListAccum<STRING> @path;
+    OrAccum @visited = false;
+    SetAccum<STRING> @@final_path;
+
+    Start = { Account.*, Device.*, Card.*, Transaction.* };
+    Src = SELECT s FROM Start:s WHERE s.id == source_id
+          POST-ACCUM s.@path += s.id, s.@visited = true;
+
+    Curr = Src;
+    WHILE Curr.size() > 0 AND max_depth > 0 DO
+        max_depth = max_depth - 1;
+        Curr = SELECT t FROM Curr:s -(ANY:e)- ANY:t
+               WHERE NOT t.@visited
+               ACCUM
+                   t.@path = s.@path + [t.id],
+                   t.@visited += true
+               POST-ACCUM
+                   IF t.id == target_id THEN
+                       FOREACH node_id IN t.@path DO
+                           @@final_path += node_id
+                       END
+                   END;
+    END;
+
+    PRINT @@final_path;
+}

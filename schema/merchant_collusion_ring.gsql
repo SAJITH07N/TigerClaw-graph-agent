@@ -1,0 +1,44 @@
+CREATE QUERY merchant_collusion_ring(STRING merchant_id, INT min_accounts = 2) FOR GRAPH FraudInvestigationGraph {
+  /*
+   * Merchant Collusion & Bust-Out Ring Detection Query.
+   * Identifies dense clusters of buyer accounts, shared devices, and payment cards
+   * interacting in coordinated patterns with specific merchants.
+   */
+  TYPEDEF TUPLE<STRING merchant_id, INT colluding_accounts_count, INT shared_devices_count, DOUBLE avg_amount, DOUBLE collusion_risk_score, BOOL is_collusion_detected> CollusionResult;
+  ListAccum<CollusionResult> @@collusion_results;
+  SetAccum<STRING> @@linked_accounts;
+  SetAccum<STRING> @@linked_devices;
+  SumAccum<DOUBLE> @@total_volume;
+  SumAccum<INT> @@txn_count;
+
+  Txns = SELECT t FROM Transaction:t
+         WHERE t.merchant_id == merchant_id OR merchant_id == ""
+         ACCUM
+           @@total_volume += t.amount,
+           @@txn_count += 1;
+
+  Accounts = SELECT a FROM Txns:t -(ABOUT_ACCOUNT:e)-> Account:a
+             ACCUM @@linked_accounts += a.id;
+
+  Devices = SELECT d FROM Txns:t -(FROM_DEVICE:e)-> Device:d
+            ACCUM @@linked_devices += d.id;
+
+  INT num_accs = @@linked_accounts.size();
+  INT num_devs = @@linked_devices.size();
+  DOUBLE avg_amt = 0.0;
+  IF @@txn_count > 0 THEN
+    avg_amt = @@total_volume / @@txn_count;
+  END;
+
+  DOUBLE risk_score = 0.0;
+  IF num_accs >= min_accounts THEN
+    risk_score = 0.5 + (0.1 * num_accs) + (0.15 * num_devs);
+    IF risk_score > 1.0 THEN risk_score = 1.0; END;
+  END;
+
+  BOOL is_detected = num_accs >= min_accounts AND risk_score >= 0.70;
+
+  @@collusion_results += CollusionResult(merchant_id, num_accs, num_devs, avg_amt, risk_score, is_detected);
+
+  PRINT @@collusion_results;
+}

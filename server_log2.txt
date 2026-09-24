@@ -1,0 +1,8 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\Sajith N\\tigergraph_fraud_agent']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [21324] using StatReload
+2026-09-24 22:27:15,835 [INFO] Seeding historical closed cases memory...
+2026-09-24 22:27:15,854 [INFO] Ingesting benchmark case entities into graph...
+INFO:     Started server process [5604]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

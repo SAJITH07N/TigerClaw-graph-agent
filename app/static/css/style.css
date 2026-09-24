@@ -1,0 +1,401 @@
+/* ============================================================================
+ * NEO-BAUHAUS DARK — TigerGraph Agentic Fraud Investigation Design System
+ * Geometric discipline · primary-color risk semantics · true-black canvas.
+ * ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --ink: #0A0A0B;
+  --panel: #151517;
+  --panel-2: #1D1D20;
+  --line: #2A2A30;
+  --line-strong: #3A3A42;
+  --chalk: #F5F5F2;
+  --mute: #8A8A93;
+  --bau-red: #E63A27;
+  --bau-blue: #2358E6;
+  --bau-yellow: #F5C518;
+  --bau-green: #18B26A;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  background: var(--ink);
+  color: var(--chalk);
+  /* Faint Bauhaus grid texture — architectural, not decorative */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.font-mono,
+pre,
+code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ---- Bauhaus brand mark: three primary shapes ------------------------------ */
+.bau-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.bau-mark span {
+  display: block;
+}
+.bau-mark .m-square {
+  width: 14px;
+  height: 14px;
+  background: var(--bau-red);
+}
+.bau-mark .m-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bau-blue);
+}
+.bau-mark .m-tri {
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 14px solid var(--bau-yellow);
+}
+
+/* ---- Structural surfaces --------------------------------------------------- */
+.bau-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+.bau-panel-2 {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+.bau-inset {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+/* Colored top-edge accent for panels that carry a signal */
+.edge-red    { box-shadow: inset 0 3px 0 0 var(--bau-red); }
+.edge-blue   { box-shadow: inset 0 3px 0 0 var(--bau-blue); }
+.edge-yellow { box-shadow: inset 0 3px 0 0 var(--bau-yellow); }
+.edge-green  { box-shadow: inset 0 3px 0 0 var(--bau-green); }
+
+/* ---- Section eyebrow labels (structural, not decorative) ------------------- */
+.bau-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+/* ---- Risk semantics: flat primary-color chips ----------------------------- */
+.risk-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 2px;
+  color: var(--ink);
+}
+.risk-critical { background: var(--bau-red); }
+.risk-high     { background: #F07A1A; }
+.risk-medium   { background: var(--bau-yellow); }
+.risk-low      { background: var(--bau-green); }
+.risk-unknown  { background: var(--line-strong); color: var(--chalk); }
+
+/* ---- Buttons -------------------------------------------------------------- */
+.bau-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 7px 13px;
+  border-radius: 2px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-2);
+  color: var(--chalk);
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.08s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+.bau-btn:hover {
+  background: #26262B;
+  border-color: var(--line-strong);
+}
+.bau-btn:active {
+  transform: translateY(1px);
+}
+.bau-btn-primary {
+  background: var(--bau-blue);
+  border-color: var(--bau-blue);
+  color: #fff;
+}
+.bau-btn-primary:hover {
+  background: #1B49C4;
+}
+.bau-btn-danger {
+  background: var(--bau-red);
+  border-color: var(--bau-red);
+  color: #fff;
+}
+.bau-btn-danger:hover {
+  background: #CC3020;
+}
+.bau-btn-approve {
+  background: var(--bau-green);
+  border-color: var(--bau-green);
+  color: var(--ink);
+  font-weight: 700;
+}
+.bau-btn-approve:hover {
+  background: #14995A;
+}
+
+/* ---- Custom scrollbar ----------------------------------------------------- */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 0;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--mute);
+}
+
+/* ---- Cytoscape canvas ----------------------------------------------------- */
+#cy {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(35, 88, 230, 0.06), transparent 60%),
+    var(--ink);
+}
+
+/* ---- 8-step sequence stepper ---------------------------------------------- */
+.step-cell {
+  position: relative;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 10px 8px 9px;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
+  overflow: hidden;
+}
+.step-cell:hover {
+  background: #26262B;
+}
+.step-cell .step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+}
+.step-cell .step-name {
+  font-size: 10px;
+  color: var(--mute);
+  margin-top: 5px;
+  line-height: 1.2;
+}
+.step-done {
+  border-color: var(--line-strong);
+}
+.step-done .step-num { color: var(--chalk); }
+.step-done::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--bau-blue);
+}
+.step-current {
+  background: var(--bau-blue);
+  border-color: var(--bau-blue);
+}
+.step-current .step-num,
+.step-current .step-name { color: #fff; }
+.step-current::before { display: none; }
+.step-idle .step-num { color: var(--line-strong); }
+
+/* ---- Pillar meters: geometric segmented bars ------------------------------ */
+.pillar-track {
+  height: 8px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  overflow: hidden;
+}
+.pillar-fill {
+  height: 100%;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Case list rows ------------------------------------------------------- */
+.case-row {
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  border-radius: 2px;
+  padding: 11px 12px;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.case-row:hover {
+  background: var(--panel-2);
+}
+.case-row-active {
+  background: var(--panel-2);
+  border-color: var(--line-strong);
+  border-left-color: var(--bau-blue);
+}
+
+/* ---- Filter pills --------------------------------------------------------- */
+.pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--mute);
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+}
+.pill:hover {
+  color: var(--chalk);
+  border-color: var(--line-strong);
+}
+.pill-active {
+  background: var(--bau-blue);
+  border-color: var(--bau-blue);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---- Data table ----------------------------------------------------------- */
+.bau-table thead th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mute);
+  background: var(--panel);
+  border-bottom: 2px solid var(--line-strong);
+  padding: 11px 12px;
+}
+.bau-table tbody td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.bau-table tbody tr {
+  transition: background 0.1s ease;
+}
+.bau-table tbody tr:hover {
+  background: var(--panel-2);
+}
+
+/* ---- KPI chips ------------------------------------------------------------ */
+.kpi-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--panel-2);
+}
+
+/* ---- Modal ---------------------------------------------------------------- */
+.bau-modal-backdrop {
+  background: rgba(10, 10, 11, 0.82);
+  backdrop-filter: blur(6px);
+}
+.bau-modal {
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+}
+
+/* ---- Status dot ----------------------------------------------------------- */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bau-green);
+  position: relative;
+}
+.status-dot::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid var(--bau-green);
+  opacity: 0.5;
+  animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes ping {
+  75%, 100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* ---- Node inspector overlay ---------------------------------------------- */
+#node-inspector-overlay {
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+}
+
+/* ---- Motion: one welcome reveal for modals ------------------------------- */
+@keyframes bauIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+  animation: bauIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ---- Toasts --------------------------------------------------------------- */
+.bau-toast {
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+}
+
+/* ---- Accessibility: focus + reduced motion ------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--bau-yellow);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,278 @@
+{
+  "case_id": "CASE-BM-15",
+  "benchmark_index": 15,
+  "case_title": "Cross-Border Luxury Jewelry Carding",
+  "trigger": {
+    "type": "risk_score_alert",
+    "data": {
+      "txn_id": "TXN-15001",
+      "account_id": "ACC-CARDING-1501",
+      "card_id": "CARD-4929-15",
+      "amount": 6200.0,
+      "risk_score": 0.89,
+      "device_id": "DEV-ANONYMOUS-1501",
+      "p_emaildomain": "disposable.org"
+    }
+  },
+  "investigation_results": {
+    "top_typology_match": {
+      "typology_id": "TYP-ATO-001",
+      "name": "Account Takeover (ATO)",
+      "confidence": 0.4972,
+      "matched_indicators": [
+        "new_device_fingerprint",
+        "unusual_high_value_transaction",
+        "velocity_spike_post_login"
+      ],
+      "description": "Unauthorized account takeover via credential stuffing or SIM swapping, followed by rapid fund transfer."
+    },
+    "risk_level": "critical",
+    "composite_confidence": 0.8423,
+    "data_completeness": 0.936,
+    "signal_conflict": 0.2225,
+    "evidence_pillars": {
+      "p_txn": 1.0,
+      "p_dev": 0.6,
+      "p_behav": 0.7,
+      "p_prior": 0.58
+    }
+  },
+  "evidence_trajectory": {
+    "before_additional_evidence": {
+      "data_completeness": 0.636,
+      "signal_conflict": 0.89,
+      "composite_confidence": 0.3813,
+      "risk_level": "critical",
+      "pillar_scores": {
+        "p_txn": 1.0,
+        "p_dev": 0.4,
+        "p_behav": 0.5,
+        "p_prior": 0.58
+      }
+    },
+    "additional_evidence_gathered": [
+      {
+        "inquiry_type": "device_carrier_reputation_lookup",
+        "entity": "DEV-ANONYMOUS-1501",
+        "result": "BENIGN_TELECOM_IP",
+        "timestamp": 1790271210
+      }
+    ],
+    "after_additional_evidence": {
+      "data_completeness": 0.936,
+      "signal_conflict": 0.2225,
+      "composite_confidence": 0.8423,
+      "risk_level": "critical",
+      "pillar_scores": {
+        "p_txn": 1.0,
+        "p_dev": 0.6,
+        "p_behav": 0.7,
+        "p_prior": 0.58
+      }
+    },
+    "what_changed": "Additional evidence gathering via [device_carrier_reputation_lookup] yielded [BENIGN_TELECOM_IP]. Data Completeness increased from 0.64 to 0.94. Signal Conflict reduced from 0.89 to 0.22. Composite Confidence improved from 0.38 to 0.84."
+  },
+  "next_best_actions_before_evidence": [
+    {
+      "action_id": "ACT-LOCK-9-15",
+      "action_type": "temporary_card_lock",
+      "target_entity": "CARD-4929-15",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "High-risk anomaly / syndicate pattern detected. Autonomous lock executed to prevent fund drain.",
+      "policy_citation": "POL-FRM-2026 Clause 1.1",
+      "status": "executed"
+    },
+    {
+      "action_id": "ACT-FREEZE-1501",
+      "action_type": "freeze_account_credits_debits",
+      "target_entity": "ACC-CARDING-1501",
+      "approval_route": "tier1_analyst",
+      "permission_level": "Tier-1 Fraud Analyst",
+      "rationale": "Critical risk score (critical) with multi-entity syndicate involvement. Freezing account.",
+      "policy_citation": "POL-FRM-2026 Clause 1.2",
+      "status": "pending_approval"
+    },
+    {
+      "action_id": "ACT-REVOKE-9-15",
+      "action_type": "permanent_card_revocation_reissue",
+      "target_entity": "CARD-4929-15",
+      "approval_route": "tier2_approval",
+      "permission_level": "Tier-2 Dual-Control Lead",
+      "rationale": "High value unauthorized exposure ($6,200.00). Requiring Tier-2 card revocation.",
+      "policy_citation": "POL-FRM-2026 Clause 1.2",
+      "status": "pending_approval"
+    }
+  ],
+  "next_best_actions_after_evidence": [
+    {
+      "action_id": "ACT-LOCK-9-15",
+      "action_type": "temporary_card_lock",
+      "target_entity": "CARD-4929-15",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "High-risk anomaly / syndicate pattern detected. Autonomous lock executed to prevent fund drain.",
+      "policy_citation": "POL-FRM-2026 Clause 1.1",
+      "status": "executed"
+    },
+    {
+      "action_id": "ACT-FREEZE-1501",
+      "action_type": "freeze_account_credits_debits",
+      "target_entity": "ACC-CARDING-1501",
+      "approval_route": "tier1_analyst",
+      "permission_level": "Tier-1 Fraud Analyst",
+      "rationale": "Critical risk score (critical) with multi-entity syndicate involvement. Freezing account.",
+      "policy_citation": "POL-FRM-2026 Clause 1.2",
+      "status": "executed"
+    },
+    {
+      "action_id": "ACT-REVOKE-9-15",
+      "action_type": "permanent_card_revocation_reissue",
+      "target_entity": "CARD-4929-15",
+      "approval_route": "tier2_approval",
+      "permission_level": "Tier-2 Dual-Control Lead",
+      "rationale": "High value unauthorized exposure ($6,200.00). Requiring Tier-2 card revocation.",
+      "policy_citation": "POL-FRM-2026 Clause 1.2",
+      "status": "pending_approval"
+    }
+  ],
+  "next_best_actions": [
+    {
+      "action_id": "ACT-LOCK-9-15",
+      "action_type": "temporary_card_lock",
+      "target_entity": "CARD-4929-15",
+      "approval_route": "auto_executable",
+      "permission_level": "Tier-0 Automated",
+      "rationale": "High-risk anomaly / syndicate pattern detected. Autonomous lock executed to prevent fund drain.",
+      "policy_citation": "POL-FRM-2026 Clause 1.1",
+      "status": "executed"
+    },
+    {
+      "action_id": "ACT-FREEZE-1501",
+      "action_type": "freeze_account_credits_debits",
+      "target_entity": "ACC-CARDING-1501",
+      "approval_route": "tier1_analyst",
+      "permission_level": "Tier-1 Fraud Analyst",
+      "rationale": "Critical risk score (critical) with multi-entity syndicate involvement. Freezing account.",
+      "policy_citation": "POL-FRM-2026 Clause 1.2",
+      "status": "executed"
+    },
+    {
+      "action_id": "ACT-REVOKE-9-15",
+      "action_type": "permanent_card_revocation_reissue",
+      "target_entity": "CARD-4929-15",
+      "approval_route": "tier2_approval",
+      "permission_level": "Tier-2 Dual-Control Lead",
+      "rationale": "High value unauthorized exposure ($6,200.00). Requiring Tier-2 card revocation.",
+      "policy_citation": "POL-FRM-2026 Clause 1.2",
+      "status": "pending_approval"
+    }
+  ],
+  "sar_filing": {
+    "sar_id": "SAR-CASE-BM-15",
+    "case_id": "CASE-BM-15",
+    "filed_at": "2026-09-24T17:33:30Z",
+    "institution": "First Global Bank, N.A.",
+    "filing_institution": "First Global Bank, N.A.",
+    "bsa_id": "BSA-99482-TX",
+    "mandatory_filing": true,
+    "statutory_trigger": "31 CFR \u00a7 1020.320 / FinCEN Form 111",
+    "total_suspicious_amount": 6200.0,
+    "total_suspicious_volume": 6200.0,
+    "primary_subject_accounts": [
+      "ACC-CARDING-1501"
+    ],
+    "typology": "Account Takeover (ATO)",
+    "typology_id": "TYP-ATO-001",
+    "four_part_narrative": {
+      "part_1_executive_summary": "SUSPICIOUS ACTIVITY REPORT - MANDATORY FILING UNDER 31 CFR \u00a7 1020.320.\nFiling Institution: First Global Bank, N.A. (BSA ID: BSA-99482-TX).\nCase Identifier: CASE-BM-15.\nTotal Suspicious Volume: $6,200.00.\nPrimary Suspect Account(s): ACC-CARDING-1501.\nClassification: Account Takeover (ATO).\nSummary: Automated graph investigation identified coordinated suspicious activity involving 1 account(s), 1 card(s), and device(s) DEV-ANONYMOUS-1501 exhibiting anomalous velocity and shared infrastructure.",
+      "part_2_graph_connectivity": "SECTION II: ENTITY & IDENTITY GRAPH TOPOLOGY\n- Identified Accounts: ACC-CARDING-1501\n- Associated Cards: CARD-4929-15\n- Hardware Device Fingerprints: DEV-ANONYMOUS-1501\n- IP / Address Nodes: \n- Graph Pattern Findings: Detected typology Account Takeover (ATO). Coordinated multi-entity graph patterns.\n- PageRank Risk Diffusion Score: 0.89\n- Community Syndicate Size: 1 entities.",
+      "part_2_entity_graph": "SECTION II: ENTITY & IDENTITY GRAPH TOPOLOGY\n- Identified Accounts: ACC-CARDING-1501\n- Associated Cards: CARD-4929-15\n- Hardware Device Fingerprints: DEV-ANONYMOUS-1501\n- IP / Address Nodes: \n- Graph Pattern Findings: Detected typology Account Takeover (ATO). Coordinated multi-entity graph patterns.\n- PageRank Risk Diffusion Score: 0.89\n- Community Syndicate Size: 1 entities.",
+      "part_3_chronological_flow": "SECTION III: CHRONOLOGICAL TRANSACTION FLOW & VELOCITY\nAnalysis of transaction timestamps indicates coordinated velocity bursts:\n  * TXN-15001: Amount $6,200.00, TS: N/A, Merchant/Product: Online, Risk Score: 0.89\n- 1-Hour Velocity: 1 transactions, $6,200.00.\n- Velocity Z-Score: 1.33 vs. historical baseline.",
+      "part_4_regulatory_conclusion": "SECTION IV: REGULATORY CONCLUSION & CONTAINMENT ACTIONS\nThe investigated pattern matches documented typology 'Account Takeover (ATO)' (Confidence: 49.72%). Immediate preventative measures executed: [temporary_card_lock, freeze_account_credits_debits, permanent_card_revocation_reissue]. This filing is maintained under 31 U.S.C. 5318(g) Safe Harbor and in compliance with Bank Secrecy Act records retention rules. Case memory and evidence graph stored under TigerGraph Case Memory Node CASE-BM-15."
+    },
+    "narrative_sections": {
+      "part_1_executive_summary": "SUSPICIOUS ACTIVITY REPORT - MANDATORY FILING UNDER 31 CFR \u00a7 1020.320.\nFiling Institution: First Global Bank, N.A. (BSA ID: BSA-99482-TX).\nCase Identifier: CASE-BM-15.\nTotal Suspicious Volume: $6,200.00.\nPrimary Suspect Account(s): ACC-CARDING-1501.\nClassification: Account Takeover (ATO).\nSummary: Automated graph investigation identified coordinated suspicious activity involving 1 account(s), 1 card(s), and device(s) DEV-ANONYMOUS-1501 exhibiting anomalous velocity and shared infrastructure.",
+      "part_2_graph_connectivity": "SECTION II: ENTITY & IDENTITY GRAPH TOPOLOGY\n- Identified Accounts: ACC-CARDING-1501\n- Associated Cards: CARD-4929-15\n- Hardware Device Fingerprints: DEV-ANONYMOUS-1501\n- IP / Address Nodes: \n- Graph Pattern Findings: Detected typology Account Takeover (ATO). Coordinated multi-entity graph patterns.\n- PageRank Risk Diffusion Score: 0.89\n- Community Syndicate Size: 1 entities.",
+      "part_2_entity_graph": "SECTION II: ENTITY & IDENTITY GRAPH TOPOLOGY\n- Identified Accounts: ACC-CARDING-1501\n- Associated Cards: CARD-4929-15\n- Hardware Device Fingerprints: DEV-ANONYMOUS-1501\n- IP / Address Nodes: \n- Graph Pattern Findings: Detected typology Account Takeover (ATO). Coordinated multi-entity graph patterns.\n- PageRank Risk Diffusion Score: 0.89\n- Community Syndicate Size: 1 entities.",
+      "part_3_chronological_flow": "SECTION III: CHRONOLOGICAL TRANSACTION FLOW & VELOCITY\nAnalysis of transaction timestamps indicates coordinated velocity bursts:\n  * TXN-15001: Amount $6,200.00, TS: N/A, Merchant/Product: Online, Risk Score: 0.89\n- 1-Hour Velocity: 1 transactions, $6,200.00.\n- Velocity Z-Score: 1.33 vs. historical baseline.",
+      "part_4_regulatory_conclusion": "SECTION IV: REGULATORY CONCLUSION & CONTAINMENT ACTIONS\nThe investigated pattern matches documented typology 'Account Takeover (ATO)' (Confidence: 49.72%). Immediate preventative measures executed: [temporary_card_lock, freeze_account_credits_debits, permanent_card_revocation_reissue]. This filing is maintained under 31 U.S.C. 5318(g) Safe Harbor and in compliance with Bank Secrecy Act records retention rules. Case memory and evidence graph stored under TigerGraph Case Memory Node CASE-BM-15."
+    },
+    "full_narrative_text": "SUSPICIOUS ACTIVITY REPORT - MANDATORY FILING UNDER 31 CFR \u00a7 1020.320.\nFiling Institution: First Global Bank, N.A. (BSA ID: BSA-99482-TX).\nCase Identifier: CASE-BM-15.\nTotal Suspicious Volume: $6,200.00.\nPrimary Suspect Account(s): ACC-CARDING-1501.\nClassification: Account Takeover (ATO).\nSummary: Automated graph investigation identified coordinated suspicious activity involving 1 account(s), 1 card(s), and device(s) DEV-ANONYMOUS-1501 exhibiting anomalous velocity and shared infrastructure.\n\nSECTION II: ENTITY & IDENTITY GRAPH TOPOLOGY\n- Identified Accounts: ACC-CARDING-1501\n- Associated Cards: CARD-4929-15\n- Hardware Device Fingerprints: DEV-ANONYMOUS-1501\n- IP / Address Nodes: \n- Graph Pattern Findings: Detected typology Account Takeover (ATO). Coordinated multi-entity graph patterns.\n- PageRank Risk Diffusion Score: 0.89\n- Community Syndicate Size: 1 entities.\n\nSECTION III: CHRONOLOGICAL TRANSACTION FLOW & VELOCITY\nAnalysis of transaction timestamps indicates coordinated velocity bursts:\n  * TXN-15001: Amount $6,200.00, TS: N/A, Merchant/Product: Online, Risk Score: 0.89\n- 1-Hour Velocity: 1 transactions, $6,200.00.\n- Velocity Z-Score: 1.33 vs. historical baseline.\n\nSECTION IV: REGULATORY CONCLUSION & CONTAINMENT ACTIONS\nThe investigated pattern matches documented typology 'Account Takeover (ATO)' (Confidence: 49.72%). Immediate preventative measures executed: [temporary_card_lock, freeze_account_credits_debits, permanent_card_revocation_reissue]. This filing is maintained under 31 U.S.C. 5318(g) Safe Harbor and in compliance with Bank Secrecy Act records retention rules. Case memory and evidence graph stored under TigerGraph Case Memory Node CASE-BM-15.",
+    "status": "QUEUED_FOR_BSA_REVIEW"
+  },
+  "grounded_explanation": "# FRAUD INVESTIGATION AUDIT REPORT - CASE-BM-15\n**Primary Finding**: Classified as **Account Takeover (ATO)** (Typology ID: `TYP-ATO-001`).\n**Risk Level**: `CRITICAL` | **Composite Confidence**: `84.23%` | **Data Completeness**: `93.60%`.\n\n## 1. Graph Evidence & Entity Topology\n- **Target Accounts**: ACC-CARDING-1501\n- **Associated Cards**: CARD-4929-15\n- **Hardware Devices**: DEV-ANONYMOUS-1501\n- **Graph Indicators**: new_device_fingerprint, unusual_high_value_transaction, velocity_spike_post_login\n\n## 2. Uncertainty & Evidence Trajectory\n- **Pillar Completeness**: Txn: 1.00, Dev: 0.60, Behav: 0.70, Prior Cases: 0.58\n- **Evidence Trajectory Delta**: Additional evidence gathering via [device_carrier_reputation_lookup] yielded [BENIGN_TELECOM_IP]. Data Completeness increased from 0.64 to 0.94. Signal Conflict reduced from 0.89 to 0.22. Composite Confidence improved from 0.38 to 0.84.\n\n## 3. Adversarial Counterfactual Analysis\n- **Strongest Benign Counterfactual**: Shared Household Device or Authorized Family Delegate (Plausibility: 55.00%)\n- **Fraud vs. Benign Confidence**: 75.00% | **False-Positive Risk**: 25.00%\n- **Adversarial Recommendation**: `CONFIRM_CONTAINMENT`\n\n## 4. Policy-Grounded Next-Best Actions\n- **[Tier-0 Automated] temporary_card_lock** (executed): High-risk anomaly / syndicate pattern detected. Autonomous lock executed to prevent fund drain. *(Ref: POL-FRM-2026 Clause 1.1)*\n- **[Tier-1 Fraud Analyst] freeze_account_credits_debits** (executed): Critical risk score (critical) with multi-entity syndicate involvement. Freezing account. *(Ref: POL-FRM-2026 Clause 1.2)*\n- **[Tier-2 Dual-Control Lead] permanent_card_revocation_reissue** (pending_approval): High value unauthorized exposure ($6,200.00). Requiring Tier-2 card revocation. *(Ref: POL-FRM-2026 Clause 1.2)*\n\n## 5. Regulatory FinCEN SAR Filing\n- **SAR ID**: `SAR-CASE-BM-15` | **Status**: `QUEUED_FOR_BSA_REVIEW` | **Suspicious Volume**: `$6,200.00`\n- **Filing Mandate**: 31 CFR \u00a7 1020.320",
+  "case_memory_id": "CASE-BM-15",
+  "audit_steps": [
+    {
+      "step": 1,
+      "name": "Trigger Ingestion & Normalization",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Ingested risk_score_alert for txn TXN-15001"
+    },
+    {
+      "step": 2,
+      "name": "Entity Resolution & Neighborhood BFS",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Extracted 20 nodes and 25 edges."
+    },
+    {
+      "step": 3,
+      "name": "Multi-Query GSQL & GraphRAG Evidence Gathering",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Ran 9 GSQL queries (including Circular Routing & Merchant Collusion). Matched top typology: Account Takeover (ATO)."
+    },
+    {
+      "step": 4,
+      "name": "Specialized Typology Deep-Dive Analysis",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Specialized typology analysis identified [Account Takeover & Device Spoofing] as the primary pattern (score: 0.25). FinCEN classification: Cyber-Enabled Identity Theft."
+    },
+    {
+      "step": 5,
+      "name": "Multi-Pillar Uncertainty Assessment",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Completeness: 0.64, Conflict: 0.89, Conf: 0.38, Loop Required: True"
+    },
+    {
+      "step": 6,
+      "name": "Controlled Evidence Gathering Loop & Trajectory Diff",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Additional evidence gathering via [device_carrier_reputation_lookup] yielded [BENIGN_TELECOM_IP]. Data Completeness increased from 0.64 to 0.94. Signal Conflict reduced from 0.89 to 0.22. Composite Confidence improved from 0.38 to 0.84."
+    },
+    {
+      "step": 7,
+      "name": "Adversarial Counterfactual Check",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Top counterfactual: Shared Household Device or Authorized Family Delegate (0.55). Fraud Conf: 0.75. Rec: CONFIRM_CONTAINMENT."
+    },
+    {
+      "step": 8,
+      "name": "Next-Best Action Determination & Permissions Gating",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Generated 3 actions. SAR Required: True."
+    },
+    {
+      "step": 9,
+      "name": "Grounded Explanation Synthesis",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Synthesized audit report (Deterministic GraphRAG Grounded) with 3 actions and policy grounding."
+    },
+    {
+      "step": 10,
+      "name": "Graph Case Memory Persistence",
+      "timestamp": 1790271210,
+      "status": "completed",
+      "details": "Persisted case CASE-BM-15 (9 evidence, 3 actions) to TigerGraph Case Memory."
+    }
+  ]
+}

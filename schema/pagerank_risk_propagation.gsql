@@ -1,0 +1,30 @@
+CREATE QUERY pagerank_risk_propagation(INT max_iter, DOUBLE damping) FOR GRAPH FraudInvestigationGraph {
+    /*
+      PageRank Risk Propagation / Associative Risk Diffusion.
+      Diffuses risk from flagged fraudulent entities across shared devices and accounts.
+    */
+    SumAccum<DOUBLE> @risk_score = 0.1;
+    SumAccum<DOUBLE> @incoming_risk = 0.0;
+    SumAccum<INT> @out_degree = 0;
+
+    AllNodes = { Account.*, Device.*, Card.*, Transaction.* };
+
+    AllNodes = SELECT n FROM AllNodes:n
+               POST-ACCUM
+                   n.@risk_score = n.risk_score,
+                   n.@out_degree = n.outdegree();
+
+    WHILE max_iter > 0 DO
+        max_iter = max_iter - 1;
+
+        AllNodes = SELECT s FROM AllNodes:s -(ANY:e)- ANY:t
+                   ACCUM t.@incoming_risk += s.@risk_score / (s.@out_degree + 1);
+
+        AllNodes = SELECT n FROM AllNodes:n
+                   POST-ACCUM
+                       n.@risk_score = (1.0 - damping) * n.risk_score + damping * n.@incoming_risk,
+                       n.@incoming_risk = 0.0;
+    END;
+
+    PRINT AllNodes[AllNodes.id, AllNodes.@risk_score];
+}

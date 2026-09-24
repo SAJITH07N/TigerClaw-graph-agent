@@ -1,0 +1,9 @@
+CREATE QUERY write_case_subgraph(STRING case_id, STRING status, STRING risk_level, DOUBLE confidence_score, STRING fraud_type_hypothesis) FOR GRAPH FraudInvestigationGraph {
+    /*
+      Idempotent Case Memory Upsert.
+    */
+    INSERT INTO Case (PRIMARY_ID, status, risk_level, confidence_score, fraud_type_hypothesis, opened_at, closed_at)
+    VALUES (case_id, status, risk_level, confidence_score, fraud_type_hypothesis, now(), now());
+
+    PRINT case_id, "UPSERTED" AS result;
+}

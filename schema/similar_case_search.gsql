@@ -1,0 +1,29 @@
+CREATE QUERY similar_case_search(LIST<DOUBLE> query_vector, INT top_k) FOR GRAPH FraudInvestigationGraph {
+    /*
+      TigerVector Cosine Similarity Search over PriorCases.
+    */
+    TYPEDEF TUPLE<STRING case_id, DOUBLE similarity, STRING fraud_type, STRING summary> CaseMatch;
+    HeapAccum<CaseMatch>(top_k, similarity DESC) @@top_cases;
+
+    Cases = { PriorCase.* };
+
+    Cases = SELECT c FROM Cases:c
+            POST-ACCUM
+                DOUBLE dot = 0.0,
+                DOUBLE norm1 = 0.0,
+                DOUBLE norm2 = 0.0,
+                INT i = 0,
+                WHILE i < query_vector.size() AND i < c.embedding.size() DO
+                    dot = dot + query_vector.get(i) * c.embedding.get(i),
+                    norm1 = norm1 + query_vector.get(i) * query_vector.get(i),
+                    norm2 = norm2 + c.embedding.get(i) * c.embedding.get(i),
+                    i = i + 1
+                END,
+                DOUBLE sim = 0.0,
+                IF norm1 > 0.0 AND norm2 > 0.0 THEN
+                    sim = dot / (sqrt(norm1) * sqrt(norm2))
+                END,
+                @@top_cases += CaseMatch(c.id, sim, c.fraud_type, c.summary);
+
+    PRINT @@top_cases;
+}
